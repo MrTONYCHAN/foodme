@@ -133,3 +133,9 @@ export const ArrowRightIcon = ({ size = 16, className = '' }) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
   </svg>
 )
+
+export const LogoutIcon = ({ size = 16, className = '' }) => (
+  <svg {...defaultSvgProps} width={size} height={size} className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12" />
+  </svg>
+)

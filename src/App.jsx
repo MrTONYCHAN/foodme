@@ -14,30 +14,11 @@ import {
   PreferencesIcon,
   CollapseIcon,
   ExpandIcon,
+  ArrowRightIcon,
+  LogoutIcon
 } from './components/Icons.jsx'
 
 const STAGES = { form: 'form', cooking: 'cooking', results: 'results' }
-
-const ONBOARDING_SLIDES = [
-  {
-    title: 'AI Personalization',
-    desc: 'Plans based on your schedule, vibe, and default kitchen settings.',
-    color: '#C17F5B',
-    icon: '🥑'
-  },
-  {
-    title: 'Smart Grocery Lists',
-    desc: 'Auto-generated categorized listings to ease your grocery shopping.',
-    color: '#798254',
-    icon: '🛒'
-  },
-  {
-    title: 'Cooking To-Do List',
-    desc: 'Turn recipes into interactive action checklists to cook easily.',
-    color: '#5C3E21',
-    icon: '📝'
-  }
-]
 
 const COOKING_LINES = [
   'Reading your day…',
@@ -77,11 +58,37 @@ function CookingLoader() {
 
 function Onboarding({ onStart }) {
   const [activeSlide, setActiveSlide] = useState(0)
+  const slides = [
+    {
+      title: 'AI Personalization',
+      desc: 'Plans based on your schedule, vibe, and default kitchen settings.',
+      color: '#C17F5B',
+      icon: '🥑'
+    },
+    {
+      title: 'Smart Grocery Lists',
+      desc: 'Auto-generated categorized listings to ease your grocery shopping.',
+      color: '#798254',
+      icon: '🛒'
+    },
+    {
+      title: 'Cooking To-Do List',
+      desc: 'Turn recipes into interactive action checklists to cook easily.',
+      color: '#5C3E21',
+      icon: '📝'
+    }
+  ]
+
+  const backgroundImages = [
+    '/onboarding_backdrop.png',
+    '/groceries_backdrop.png',
+    '/kitchen_profile_hero.png'
+  ]
 
   // Auto transition slide dots for premium feel
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % ONBOARDING_SLIDES.length)
+      setActiveSlide((prev) => (prev + 1) % slides.length)
     }, 4500)
     return () => clearInterval(timer)
   }, [])
@@ -89,7 +96,12 @@ function Onboarding({ onStart }) {
   return (
     <div className="onboarding-container">
       <div className="onboarding-left">
-        <img src="/onboarding_backdrop.png" alt="Fresh Ingredients Backdrop" />
+        <img 
+          src={backgroundImages[activeSlide]} 
+          alt="Fresh Ingredients Backdrop"
+          key={activeSlide} 
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
       </div>
       <div className="onboarding-right">
         <div className="onboarding-pill">Meal Planning Reimagined</div>
@@ -97,7 +109,7 @@ function Onboarding({ onStart }) {
         <p className="onboarding-subtitle">Your AI-powered kitchen assistant for smarter daily cooking.</p>
         
         <div className="onboarding-carousel">
-          {ONBOARDING_SLIDES.map((s, idx) => (
+          {slides.map((s, idx) => (
             <div 
               key={idx} 
               className="onboarding-card"
@@ -112,7 +124,7 @@ function Onboarding({ onStart }) {
             >
               <div 
                 className="onboarding-card-icon" 
-                style={{ background: s.color, color: '#FFFFFF', fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ background: s.color, color: '#FFFFFF', fontSize: '1.25rem', display: 'flex', alignItems: 'center', justifycontent: 'center' }}
               >
                 {s.icon}
               </div>
@@ -134,7 +146,7 @@ function Onboarding({ onStart }) {
         </button>
 
         <div className="onboarding-dots">
-          {ONBOARDING_SLIDES.map((_, idx) => (
+          {slides.map((_, idx) => (
             <div 
               key={idx} 
               className={`onboarding-dot ${activeSlide === idx ? 'active' : ''}`}
@@ -152,9 +164,41 @@ function Onboarding({ onStart }) {
   )
 }
 
-function GroceriesTab({ plan, onNavigate }) {
+function GroceriesTab({ plan, onNavigate, onCompleteCheckout, onResetPlan }) {
   const [checkedItems, setCheckedItems] = useState({})
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [actualSpentInput, setActualSpentInput] = useState('')
+  const [checkoutSuccess, setCheckoutSuccess] = useState(null)
   
+  if (checkoutSuccess) {
+    return (
+      <div className="checkout-success-card">
+        <div className="checkout-success-icon">🎉</div>
+        <h2 className="empty-state-title" style={{ fontSize: '1.6rem' }}>Grocery Trip Completed!</h2>
+        <p className="empty-state-desc" style={{ maxWidth: '440px' }}>
+          Your shopping trip has been saved to your kitchen log. You spent <strong>${checkoutSuccess.spent.toFixed(2)}</strong>.
+        </p>
+        
+        {checkoutSuccess.savings > 0 && (
+          <div className="checkout-savings-pill">
+            <span>🌿 You saved <strong>${checkoutSuccess.savings.toFixed(2)}</strong> relative to today's budget limit!</span>
+          </div>
+        )}
+
+        <button 
+          className="onboarding-btn btn-pill" 
+          style={{ width: 'auto', marginTop: '12px' }}
+          onClick={() => {
+            onResetPlan()
+            onNavigate('dashboard')
+          }}
+        >
+          📊 Go back to Dashboard
+        </button>
+      </div>
+    )
+  }
+
   if (!plan) {
     return (
       <div className="empty-state-card">
@@ -174,12 +218,31 @@ function GroceriesTab({ plan, onNavigate }) {
     )
   }
 
-  const { grocery } = plan
+  const { grocery, profile } = plan
   const totalCount = grocery.groups.reduce((s, g) => s + g.items.length, 0)
   const checkedCount = Object.values(checkedItems).filter(Boolean).length
 
   const toggleItem = (key) => {
     setCheckedItems(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const handleOpenCheckout = () => {
+    setActualSpentInput(grocery.total.toFixed(2))
+    setShowCheckoutModal(true)
+  }
+
+  const handleConfirmCheckout = () => {
+    const spentVal = parseFloat(actualSpentInput) || grocery.total
+    const limitVal = profile?.budget || 45
+    const savings = Math.max(0, limitVal - spentVal)
+    
+    onCompleteCheckout(spentVal, limitVal)
+    setCheckoutSuccess({ spent: spentVal, savings })
+    setShowCheckoutModal(false)
+  }
+
+  const handleClearAll = () => {
+    setCheckedItems({})
   }
 
   return (
@@ -194,12 +257,28 @@ function GroceriesTab({ plan, onNavigate }) {
         </div>
       </div>
 
-      <div className="widget-panel" style={{ background: 'var(--bg-sidebar)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="widget-panel" style={{ background: 'var(--bg-sidebar)', boxShadow: 'var(--shadow-sm)', position: 'relative' }}>
         <div className="results-section-header" style={{ marginBottom: '18px' }}>
           <h3 className="results-section-title">Aisle Ingredients Checklist</h3>
-          <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-rust)' }}>
-            Est. Cost: ${grocery.total.toFixed(2)}
-          </span>
+          <div className="grocery-header-actions">
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--color-rust)', marginRight: '8px' }}>
+              Est. Total: ${grocery.total.toFixed(2)}
+            </span>
+            <button 
+              className="btn btn-secondary btn-pill" 
+              style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+              onClick={handleClearAll}
+            >
+              Clear checks
+            </button>
+            <button 
+              className="onboarding-btn btn-pill" 
+              style={{ width: 'auto', fontSize: '0.8rem', padding: '8px 16px' }}
+              onClick={handleOpenCheckout}
+            >
+              🛍 Checkout Trip
+            </button>
+          </div>
         </div>
 
         {grocery.groups.map(g => (
@@ -227,6 +306,55 @@ function GroceriesTab({ plan, onNavigate }) {
           </div>
         ))}
       </div>
+
+      {/* Checkout Modal Overlay */}
+      {showCheckoutModal && (
+        <div className="modal-overlay">
+          <div className="modal-card">
+            <div className="modal-header">
+              <h3 className="modal-title">Grocery Checkout</h3>
+              <button className="modal-close-btn" onClick={() => setShowCheckoutModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                Verify your final trip details and log your spending. This logs your grocery spending to the dashboard.
+              </p>
+              
+              <div className="modal-input-group">
+                <span className="modal-input-label">Actual Amount Spent</span>
+                <div className="modal-input-wrapper">
+                  <span className="modal-input-symbol">$</span>
+                  <input 
+                    type="number" 
+                    step="0.01"
+                    className="modal-input" 
+                    value={actualSpentInput}
+                    onChange={(e) => setActualSpentInput(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-faint)', fontStyle: 'italic' }}>
+                Your budget limit for today: ${ (profile?.budget || 45).toFixed(2) }
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button 
+                className="onboarding-btn btn-pill"
+                onClick={handleConfirmCheckout}
+              >
+                Complete Checkout
+              </button>
+              <button 
+                className="btn btn-secondary btn-pill"
+                onClick={() => setShowCheckoutModal(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -341,6 +469,12 @@ export default function App() {
     return localStorage.getItem('souschef_sidebar_collapsed') === 'true'
   })
 
+  // Spent history log loaded from localStorage
+  const [spentHistory, setSpentHistory] = useState(() => {
+    const saved = localStorage.getItem('souschef_spent_history')
+    return saved ? JSON.parse(saved) : []
+  })
+
   // Kitchen profile settings loaded from localStorage
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem('souschef_profile')
@@ -409,6 +543,29 @@ export default function App() {
     localStorage.setItem('souschef_history', JSON.stringify(updatedHistory))
   }
 
+  const handleCompleteCheckout = (amountSpent, budgetLimit) => {
+    const newRecord = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      amountSpent,
+      budgetLimit,
+      savings: Math.max(0, budgetLimit - amountSpent)
+    }
+    const updated = [newRecord, ...spentHistory]
+    setSpentHistory(updated)
+    localStorage.setItem('souschef_spent_history', JSON.stringify(updated))
+  }
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to log out of SousChef? This will return you to the welcome onboarding screen.')) {
+      setShowOnboarding(true)
+      localStorage.removeItem('souschef_onboarding_done')
+      setPlan(null)
+      setStage(STAGES.form)
+      setActiveTab('planner')
+    }
+  }
+
   const restartPlanner = () => {
     setStage(STAGES.form)
     setPlan(null)
@@ -420,6 +577,41 @@ export default function App() {
 
   return (
     <div className="app-container">
+      {/* Mobile Top Header */}
+      <header className="mobile-header">
+        <div className="sidebar-logo" style={{ marginBottom: 0 }}>
+          <div className="sidebar-logo-icon" style={{ width: '32px', height: '32px', borderRadius: '8px', fontSize: '1rem' }}>🍳</div>
+          <div className="sidebar-logo-text" style={{ fontSize: '1.05rem', display: 'block', opacity: 1 }}>
+            SousChef
+            <small>AI Assistant</small>
+          </div>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="sidebar-profile-avatar" style={{ width: '32px', height: '32px', fontSize: '0.8rem' }}>
+            {profile.name ? profile.name.split(' ').map(n => n[0]).join('') : 'JD'}
+          </div>
+          <button 
+            className="sidebar-toggle-btn"
+            style={{ 
+              margin: 0, 
+              border: 'none', 
+              background: 'transparent',
+              width: '32px', 
+              height: '32px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              boxShadow: 'none'
+            }}
+            onClick={handleLogout}
+            title="Log Out"
+          >
+            <LogoutIcon size={14} />
+          </button>
+        </div>
+      </header>
+
       {/* Persistent Left Sidebar with Expand/Collapse support */}
       <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-top">
@@ -498,14 +690,36 @@ export default function App() {
             <span className="sidebar-promo-tag">Pro Member</span>
             <span className="sidebar-promo-desc">Unlimited AI meal generations active.</span>
           </div>
-          <div className="sidebar-profile">
-            <div className="sidebar-profile-avatar">
-              {profile.name ? profile.name.split(' ').map(n => n[0]).join('') : 'JD'}
+          <div className="sidebar-profile" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: isSidebarCollapsed ? '0' : '10px', flexDirection: isSidebarCollapsed ? 'column' : 'row' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div className="sidebar-profile-avatar">
+                {profile.name ? profile.name.split(' ').map(n => n[0]).join('') : 'JD'}
+              </div>
+              {!isSidebarCollapsed && (
+                <div className="sidebar-profile-info">
+                  <span className="sidebar-profile-name">{profile.name || 'John Doe'}</span>
+                  <span className="sidebar-profile-plan">Premium Plan</span>
+                </div>
+              )}
             </div>
-            <div className="sidebar-profile-info">
-              <span className="sidebar-profile-name">{profile.name || 'John Doe'}</span>
-              <span className="sidebar-profile-plan">Premium Plan</span>
-            </div>
+            
+            <button 
+              className="sidebar-toggle-btn"
+              style={{ 
+                margin: isSidebarCollapsed ? '8px 0 0 0' : 0, 
+                border: 'none', 
+                background: 'transparent',
+                width: '24px', 
+                height: '24px', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+              }}
+              onClick={handleLogout}
+              title="Log Out"
+            >
+              <LogoutIcon size={14} />
+            </button>
           </div>
         </div>
       </aside>
@@ -521,9 +735,11 @@ export default function App() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
             >
-              <Dashboard 
+              <Dashboard
                 plan={plan}
                 profile={profile}
+                spentHistory={spentHistory}
+                history={history}
                 onNavigate={setActiveTab}
               />
             </motion.div>
@@ -587,6 +803,8 @@ export default function App() {
               <GroceriesTab 
                 plan={plan}
                 onNavigate={setActiveTab}
+                onCompleteCheckout={handleCompleteCheckout}
+                onResetPlan={restartPlanner}
               />
             </motion.div>
           )}
@@ -639,6 +857,60 @@ export default function App() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* Mobile Bottom Tab Navigation */}
+      <nav className="mobile-nav">
+        <button 
+          className={`mobile-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dashboard')}
+          title="Dashboard"
+        >
+          <span className="mobile-nav-icon">
+            <DashboardIcon size={20} />
+          </span>
+          <span>Dashboard</span>
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'planner' || activeTab === 'todo' ? 'active' : ''}`}
+          onClick={() => setActiveTab('planner')}
+          title="Planner"
+        >
+          <span className="mobile-nav-icon">
+            <PlannerIcon size={20} />
+          </span>
+          <span>Planner</span>
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'groceries' ? 'active' : ''}`}
+          onClick={() => setActiveTab('groceries')}
+          title="Groceries"
+        >
+          <span className="mobile-nav-icon">
+            <GroceryIcon size={20} />
+          </span>
+          <span>Groceries</span>
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+          title="Past Plans"
+        >
+          <span className="mobile-nav-icon">
+            <HistoryIcon size={20} />
+          </span>
+          <span>History</span>
+        </button>
+        <button 
+          className={`mobile-nav-item ${activeTab === 'preferences' ? 'active' : ''}`}
+          onClick={() => setActiveTab('preferences')}
+          title="Preferences"
+        >
+          <span className="mobile-nav-icon">
+            <PreferencesIcon size={20} />
+          </span>
+          <span>Preferences</span>
+        </button>
+      </nav>
     </div>
   )
 }

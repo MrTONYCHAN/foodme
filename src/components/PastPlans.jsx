@@ -19,7 +19,7 @@ export default function PastPlans({ history, onRestorePlan, onDeletePlan, onNavi
             return (
               <div 
                 key={item.id || index} 
-                className="meal-horizontal-card"
+                className="meal-horizontal-card past-plan-card"
                 style={{ cursor: 'default' }}
               >
                 <div className="meal-card-details">
@@ -44,15 +44,7 @@ export default function PastPlans({ history, onRestorePlan, onDeletePlan, onNavi
                   </div>
                 </div>
 
-                <div 
-                  style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    justifyContent: 'center', 
-                    gap: '10px',
-                    marginLeft: '20px'
-                  }}
-                >
+                <div className="past-plan-actions">
                   <button 
                     className="onboarding-btn btn-pill" 
                     style={{ padding: '10px 18px', fontSize: '0.82rem', width: 'auto' }}

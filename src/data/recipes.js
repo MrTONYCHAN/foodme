@@ -384,6 +384,38 @@ export const RECIPES = [
   },
 ]
 
+// ── Nutrition & veg/non-veg enrichment ───────────────────────────────────
+// Protein is grams per serving. `health` is a one-line "why it's good for you".
+// Kept in one table so recipes above stay readable; applied to RECIPES below.
+const NUTRITION = {
+  'overnight-oats': { protein: 12, health: 'Fibre-rich oats and chia steady blood sugar and keep you full to lunch.' },
+  'veggie-scramble': { protein: 22, health: 'Complete-protein eggs plus iron-rich spinach for steady morning energy.' },
+  'pb-banana-toast': { protein: 13, health: 'Healthy unsaturated fats and potassium for a quick, lasting lift.' },
+  'yogurt-parfait': { protein: 20, health: 'Gut-friendly probiotics and 20g protein to start the day strong.' },
+  'chickpea-bowl': { protein: 18, health: 'Plant protein and fibre with heart-healthy olive oil and antioxidants.' },
+  'turkey-wrap': { protein: 30, health: 'Lean turkey gives 30g muscle-repairing protein with little saturated fat.' },
+  'tomato-soup-grilled-cheese': { protein: 18, health: 'Lycopene-rich tomatoes support heart health; cheese adds calcium.' },
+  'rice-noodle-salad': { protein: 11, health: 'Light and hydrating, with anti-inflammatory fresh herbs and lime.' },
+  'sheet-pan-chicken': { protein: 42, health: 'Lean chicken protein plus potassium-rich potatoes and vitamin-C peppers.' },
+  'veg-stir-fry': { protein: 21, health: 'Tofu protein with cruciferous broccoli and garlic — antioxidant-dense.' },
+  'spaghetti-bolognese': { protein: 35, health: 'Iron and B12 from beef fuel red blood cells and lasting fullness.' },
+  'lentil-curry': { protein: 22, health: 'Lentil protein and fibre with anti-inflammatory turmeric and ginger.' },
+  'taco-night': { protein: 16, health: 'Black-bean protein and fibre with heart-healthy monounsaturated avocado.' },
+}
+
+// Ingredient words that make a dish non-vegetarian.
+const MEAT_WORDS = ['chicken', 'turkey', 'beef', 'pork', 'fish', 'salmon', 'bacon', 'ham', 'shrimp', 'lamb']
+
+const isNonVeg = (recipe) =>
+  recipe.ingredients.some((i) => MEAT_WORDS.some((m) => i.item.toLowerCase().includes(m)))
+
+// Attach derived fields once at module load so every consumer sees them.
+for (const recipe of RECIPES) {
+  recipe.type = isNonVeg(recipe) ? 'nonveg' : 'veg'
+  recipe.protein = NUTRITION[recipe.id]?.protein ?? Math.round(recipe.calories * 0.05)
+  recipe.health = NUTRITION[recipe.id]?.health ?? 'A balanced, wholesome choice.'
+}
+
 // Quick lookup helpers
 export const byId = Object.fromEntries(RECIPES.map((r) => [r.id, r]))
 export const bySlot = (slot) => RECIPES.filter((r) => r.slot === slot)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DIET_TAGS } from '../data/recipes.js'
+import { toast } from './Toast.jsx'
 import {
   ClockIcon,
   SparklesIcon,
@@ -58,6 +59,37 @@ const getIngredientEmoji = (name) => {
   return '🥗'
 }
 
+// Classic veg / non-veg square indicator (green for veg, red for non-veg).
+function VegBadge({ type, size = 16 }) {
+  const color = type === 'nonveg' ? '#B04B3E' : '#6C7A4E'
+  const label = type === 'nonveg' ? 'Non-vegetarian' : 'Vegetarian'
+  return (
+    <span
+      title={label}
+      aria-label={label}
+      style={{
+        width: size,
+        height: size,
+        border: `2px solid ${color}`,
+        borderRadius: 4,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          width: size * 0.42,
+          height: size * 0.42,
+          borderRadius: '50%',
+          background: color,
+        }}
+      />
+    </span>
+  )
+}
+
 function MealRow({ meal }) {
   const [expanded, setExpanded] = useState(false)
   
@@ -84,6 +116,7 @@ function MealRow({ meal }) {
     >
       <div className="meal-card-details">
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+          <VegBadge type={meal.type} />
           <span className="meal-slot-pill">{meal.slot}</span>
           <span className="meal-meta-pill" style={{ border: 'none', background: 'transparent', padding: 0 }}>
             <ClockIcon size={12} style={{ marginRight: '4px' }} />
@@ -100,7 +133,13 @@ function MealRow({ meal }) {
 
         <div className="meal-card-meta">
           <span className="meal-meta-pill">🔥 {meal.calories} kcal/serving</span>
+          <span className="meal-meta-pill">💪 {meal.protein}g protein</span>
           <span className="meal-meta-pill">👥 {meal.servings} servings</span>
+        </div>
+
+        <div className="meal-health-note">
+          <span style={{ flexShrink: 0 }}>💚</span>
+          <span>{meal.health}</span>
         </div>
 
         <div className="meal-card-tags">
@@ -166,7 +205,7 @@ export default function Results({ plan, onRestart, onNavigate }) {
     })
     lines.push(`Estimated total: $${grocery.total.toFixed(2)}`)
     navigator.clipboard?.writeText(lines.join('\n'))
-    alert('Grocery list copied to clipboard!')
+    toast('Grocery list copied to clipboard!', 'success')
   }
 
   const totalItems = grocery.groups.reduce((s, g) => s + g.items.length, 0)

@@ -7,6 +7,7 @@ import { RECIPES, SUBSTITUTIONS, SLOTS, DIET_TAGS } from '../data/recipes.js'
 
 const VALID_DIET = new Set(Object.keys(DIET_TAGS))
 const VALID_ENERGY = new Set(['low', 'medium', 'high'])
+const VALID_FOODTYPE = new Set(['all', 'veg', 'nonveg'])
 
 const clamp = (n, lo, hi, fallback) => {
   const v = Number(n)
@@ -52,6 +53,7 @@ export function sanitizeProfile(raw) {
     diet,
     energy: VALID_ENERGY.has(input.energy) ? input.energy : 'medium',
     maxPrep: Math.round(clamp(input.maxPrep, 1, 240, 40)),
+    foodType: VALID_FOODTYPE.has(input.foodType) ? input.foodType : 'all',
     avoidances,
     useIngredients,
   }
@@ -116,9 +118,13 @@ function scoreRecipe(recipe, profile) {
 }
 
 // Does a recipe satisfy every hard dietary requirement?
-function passesDiet(recipe, diet, avoidances = '') {
+function passesDiet(recipe, diet, avoidances = '', foodType = 'all') {
   const passesTags = diet.every((d) => recipe.tags.includes(d))
   if (!passesTags) return false
+
+  // Veg / non-veg hard filter.
+  if (foodType === 'veg' && recipe.type !== 'veg') return false
+  if (foodType === 'nonveg' && recipe.type !== 'nonveg') return false
 
   // Hard avoidances check - filter out if ingredients contain avoided terms
   if (avoidances) {
@@ -138,7 +144,7 @@ function passesDiet(recipe, diet, avoidances = '') {
 // Pick the best recipe for a slot, avoiding ingredient-protein repetition.
 function pickForSlot(slot, profile, usedTitles) {
   const candidates = RECIPES.filter(
-    (r) => r.slot === slot && passesDiet(r, profile.diet, profile.avoidances),
+    (r) => r.slot === slot && passesDiet(r, profile.diet, profile.avoidances, profile.foodType),
   )
   if (candidates.length === 0) return null
 
@@ -290,6 +296,8 @@ export function generatePlan(rawProfile) {
 
   const totalPrep = cookable.reduce((s, m) => s + m.prep, 0)
   const totalCalories = cookable.reduce((s, m) => s + m.calories, 0)
+  const totalProtein = cookable.reduce((s, m) => s + (m.protein || 0), 0)
+  const allVeg = cookable.length > 0 && cookable.every((m) => m.type === 'veg')
 
   // Cooking to-do checklist, ordered by slot then by step.
   const todos = cookable.flatMap((m) =>
@@ -311,6 +319,8 @@ export function generatePlan(rawProfile) {
     summary: {
       totalPrep,
       totalCalories,
+      totalProtein,
+      allVeg,
       mealCount: cookable.length,
       anyMissing: meals.some((m) => m.missing),
     },

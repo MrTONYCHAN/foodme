@@ -38,6 +38,7 @@ export default function DayForm({ onGenerate, profile }) {
   const [budget, setBudget] = useState(45)
   const [selectedIngredients, setSelectedIngredients] = useState([])
   const [schedule, setSchedule] = useState('busy')
+  const [foodType, setFoodType] = useState('all')
 
   // Load defaults from profile if available
   useEffect(() => {
@@ -47,6 +48,9 @@ export default function DayForm({ onGenerate, profile }) {
       }
       if (profile.dietStyle?.includes('lowCarb') || profile.dietStyle?.includes('keto')) {
         setVibe('healthy')
+      }
+      if (profile.dietStyle?.includes('vegan') || profile.dietStyle?.includes('vegetarian')) {
+        setFoodType('veg')
       }
       if (profile.confidence === 'Beginner') {
         setSchedule('busy')
@@ -90,13 +94,39 @@ export default function DayForm({ onGenerate, profile }) {
       maxPrep: selectedSched.maxPrep,
       diet: profile?.dietStyle || [],
       avoidances: profile?.avoidances || '',
-      useIngredients: selectedIngredients // custom logic inside planner.js
+      useIngredients: selectedIngredients, // custom logic inside planner.js
+      foodType, // 'all' | 'veg' | 'nonveg'
     }
     onGenerate(plannerProfile)
   }
 
+  const FOOD_TYPES = [
+    { key: 'all', label: 'Everything', icon: '🍽' },
+    { key: 'veg', label: 'Vegetarian', icon: '🥗' },
+    { key: 'nonveg', label: 'Non-veg', icon: '🍗' },
+  ]
+
   return (
     <div style={{ marginTop: '24px' }}>
+      <div className="foodtype-toggle" role="tablist" aria-label="Veg or non-veg">
+        <span className="foodtype-toggle-label">I want to eat</span>
+        <div className="foodtype-options">
+          {FOOD_TYPES.map((f) => (
+            <button
+              key={f.key}
+              role="tab"
+              aria-selected={foodType === f.key}
+              className={`foodtype-pill ${foodType === f.key ? 'active' : ''}`}
+              data-type={f.key}
+              onClick={() => setFoodType(f.key)}
+            >
+              <span>{f.icon}</span>
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="form-grid">
         {/* Today's Vibe */}
         <div className="form-panel">

@@ -44,7 +44,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   ONBOARDING / LANDING PAGE
+   ONBOARDING / LANDING PAGE (WITH DYNAMIC TRANSITIONS)
    ───────────────────────────────────────────────────────────────────────── */
 .onboarding-container {
   display: flex;
@@ -59,12 +59,14 @@ body {
   height: 100%;
   position: relative;
   background: #3C2C1E;
+  transition: background-image 0.5s ease-in-out;
 }
 
 .onboarding-left img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 0.5s ease-in-out;
 }
 
 .onboarding-left::after {
@@ -517,47 +519,83 @@ body {
   padding: 40px 60px 80px;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE HEADER & BOTTOM TAB NAVIGATION BAR
+   ───────────────────────────────────────────────────────────────────────── */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 50;
+  box-shadow: 0 1px 4px rgba(66, 43, 24, 0.04);
+}
+
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: var(--bg-sidebar);
+  border-top: 1px solid var(--border);
+  align-items: center;
+  justify-content: space-around;
+  z-index: 50;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -1px 4px rgba(66, 43, 24, 0.04);
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.64rem;
+  font-weight: 500;
+  gap: 4px;
+  flex: 1;
+  height: 100%;
+  transition: all 0.2s;
+}
+
+.mobile-nav-item.active {
+  color: var(--color-rust);
+  font-weight: 600;
+}
+
+.mobile-nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 768px) {
-  .app-container {
-    flex-direction: column;
-  }
-  .sidebar, .sidebar.collapsed {
-    width: 100% !important;
-    height: auto;
-    padding: 12px 16px !important;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    flex-direction: row;
-    align-items: center;
-    position: relative;
-    z-index: 10;
-  }
-  .sidebar-toggle-btn {
-    display: none;
-  }
-  .sidebar-logo {
-    margin-bottom: 0 !important;
-  }
-  .sidebar-logo-text {
-    display: block !important;
-  }
-  .sidebar-nav {
-    flex-direction: row;
-    gap: 4px;
-    margin-top: 0;
-  }
-  .sidebar-nav-item {
-    padding: 8px 12px;
-    font-size: 0.8rem;
-  }
-  .sidebar-nav-item span:not(.sidebar-nav-icon) {
+  .sidebar {
     display: none !important;
   }
-  .sidebar-bottom {
-    display: none;
+  .mobile-header {
+    display: flex;
+  }
+  .mobile-nav {
+    display: flex;
   }
   .main-content {
-    padding: 24px 16px;
+    padding: 76px 16px 88px !important;
+    overflow-x: hidden;
   }
 }
 
@@ -1406,6 +1444,199 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
+   GROCERY CHECKOUT FEATURES
+   ───────────────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(66, 43, 24, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-card {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 460px;
+  width: 90%;
+  box-shadow: 0 20px 50px rgba(66, 43, 24, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: modalScaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalScaleIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  color: var(--text-faint);
+  cursor: pointer;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-input-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.modal-input-symbol {
+  position: absolute;
+  left: 14px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.modal-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px 12px 28px;
+  font-family: inherit;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  outline: none;
+  font-weight: 700;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.checkout-success-card {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 48px 32px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  box-shadow: var(--shadow-sm);
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.checkout-success-icon {
+  font-size: 3.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: popScaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popScaleIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.checkout-savings-pill {
+  background: #EAF0E2;
+  border: 1px solid #D6E3CE;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-green-check);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Spending log items in Dashboard */
+.spending-log-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.spending-log-row {
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.spending-log-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spending-log-date {
+  font-size: 0.74rem;
+  color: var(--text-faint);
+}
+
+.spending-log-amount {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+}
+
+.spending-log-saving {
+  font-size: 0.72rem;
+  color: var(--color-green-check);
+  background: #EAF0E2;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
    COOKING TO-DO LIST (FULL VIEW)
    ───────────────────────────────────────────────────────────────────────── */
 .todo-view-header {
@@ -2068,7 +2299,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   SHARED UTILITIES
+   SHARED UTILITIES & MOBILE OPTIMIZATIONS
    ───────────────────────────────────────────────────────────────────────── */
 .btn-secondary {
   background: var(--bg-sidebar);
@@ -2151,4 +2382,287 @@ body {
   color: var(--text-secondary);
   max-width: 380px;
   line-height: 1.45;
+}
+
+/* Media Queries for Mobile Fine-Tuning */
+@media (max-width: 540px) {
+  .vibe-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .onboarding-right {
+    padding: 36px 16px !important;
+  }
+  .onboarding-title {
+    font-size: 1.85rem !important;
+  }
+  .onboarding-card {
+    min-width: 200px !important;
+  }
+  .profile-banner {
+    height: 120px !important;
+  }
+  .profile-banner-overlay {
+    padding: 16px 20px !important;
+  }
+  .profile-banner-title {
+    font-size: 1.45rem !important;
+  }
+  .meal-horizontal-card {
+    flex-direction: column-reverse !important;
+    gap: 16px !important;
+    padding: 16px !important;
+  }
+  .meal-card-image-box {
+    width: 100% !important;
+    height: 150px !important;
+    border-radius: var(--radius-md) !important;
+  }
+  .meal-card-top-row {
+    flex-direction: column !important;
+    gap: 4px !important;
+    align-items: flex-start !important;
+  }
+  .meal-card-cost {
+    margin-left: 0 !important;
+    font-size: 1.15rem !important;
+  }
+  .results-actions-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .results-actions-row button {
+    width: 100%;
+    justify-content: center;
+  }
+  .modal-card {
+    padding: 24px 20px !important;
+    width: 92% !important;
+  }
+  .todo-progress-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MEAL CARD — HEALTH NOTE (why it's good for you)
+   ───────────────────────────────────────────────────────────────────────── */
+.meal-health-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  background: rgba(108, 122, 78, 0.08);
+  border: 1px solid rgba(108, 122, 78, 0.18);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DAYFORM — VEG / NON-VEG SEGMENTED TOGGLE
+   ───────────────────────────────────────────────────────────────────────── */
+.foodtype-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+.foodtype-toggle-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+.foodtype-options {
+  display: flex;
+  gap: 8px;
+  background: var(--bg-active);
+  padding: 4px;
+  border-radius: 999px;
+}
+.foodtype-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.foodtype-pill:hover {
+  color: var(--text-primary);
+}
+.foodtype-pill.active {
+  background: var(--bg-sidebar);
+  box-shadow: var(--shadow-sm);
+}
+.foodtype-pill.active[data-type='veg'] {
+  color: #6c7a4e;
+}
+.foodtype-pill.active[data-type='nonveg'] {
+  color: #b04b3e;
+}
+.foodtype-pill.active[data-type='all'] {
+  color: var(--color-brown);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   MOBILE RESPONSIVENESS AND LAYOUT IMPROVEMENTS
+   ───────────────────────────────────────────────────────────────────────── */
+
+.past-plan-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  margin-left: 20px;
+  flex-shrink: 0;
+}
+
+.grocery-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .results-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .grocery-header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+  .grocery-header-actions span {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  .grocery-header-actions button {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.8rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-stats-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 540px) {
+  .past-plan-card {
+    flex-direction: column !important; /* Details top, buttons bottom on mobile */
+  }
+  .past-plan-actions {
+    flex-direction: row;
+    margin-left: 0;
+    width: 100%;
+    margin-top: 12px;
+    gap: 8px;
+  }
+  .past-plan-actions button {
+    flex: 1;
+    width: auto !important;
+    justify-content: center;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   DASHBOARD — ONGOING/DONE STATUS STRIP + NUTRITION BANNER
+   ───────────────────────────────────────────────────────────────────────── */
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.status-card {
+  position: relative;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--color-brown);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.status-card[data-tone='ongoing'] { border-left-color: var(--color-rust); }
+.status-card[data-tone='done'] { border-left-color: #6c7a4e; }
+.status-card[data-tone='plans'] { border-left-color: var(--color-brown); }
+.status-card-icon { font-size: 1.5rem; flex-shrink: 0; }
+.status-card-num {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.status-card-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.status-card-foot {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  max-width: 45%;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.nutrition-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  background: rgba(108, 122, 78, 0.08);
+  border: 1px solid rgba(108, 122, 78, 0.2);
+  border-radius: var(--radius-md);
+}
+.nutrition-banner-icon { font-size: 1.6rem; flex-shrink: 0; }
+.nutrition-banner-title {
+  display: block;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.nutrition-banner-desc {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+@media (max-width: 720px) {
+  .status-strip { grid-template-columns: 1fr; }
 }
