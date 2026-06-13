@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist/**'] },
+  { ignores: ['dist/**', 'coverage/**'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -36,6 +36,19 @@ export default [
       'react/prop-types': 'off',
       'react/no-unescaped-entities': 'off',
       'react-hooks/set-state-in-effect': 'off',
+    },
+  },
+  {
+    // Test files: provide vitest globals and relax rules that fight test mocks
+    // (e.g. a passthrough mock that intentionally discards animation props).
+    files: ['**/*.{test,spec}.{js,jsx}', 'src/test/**/*.{js,jsx}'],
+    languageOptions: {
+      globals: { ...globals.node, vi: 'readonly' },
+    },
+    rules: {
+      'no-unused-vars': 'off',
+      'react/display-name': 'off',
+      'react-refresh/only-export-components': 'off',
     },
   },
 ]

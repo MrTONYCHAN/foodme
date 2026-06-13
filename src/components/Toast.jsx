@@ -1,21 +1,9 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { TOAST_EVENT } from '../lib/toast.js'
 
-// Lightweight, dependency-free toast system.
-//   import { toast } from './Toast'
-//   toast('Saved!', 'success')
-// `<ToastHost/>` is mounted once at the app root and listens for events, so
-// any module can fire a toast without threading props through the tree.
-
-const EVENT = 'souschef:toast'
-let counter = 0
-
-export function toast(message, type = 'info') {
-  if (typeof window === 'undefined' || !message) return
-  window.dispatchEvent(
-    new CustomEvent(EVENT, { detail: { id: ++counter, message, type } }),
-  )
-}
+// `<ToastHost/>` is mounted once at the app root and listens for toast events
+// (fired via `toast()` in ../lib/toast.js), rendering the message stack.
 
 const STYLE = {
   success: { bg: '#6C7A4E', icon: '✅' },
@@ -35,8 +23,8 @@ export default function ToastHost() {
         setToasts((prev) => prev.filter((x) => x.id !== t.id))
       }, 3000)
     }
-    window.addEventListener(EVENT, onToast)
-    return () => window.removeEventListener(EVENT, onToast)
+    window.addEventListener(TOAST_EVENT, onToast)
+    return () => window.removeEventListener(TOAST_EVENT, onToast)
   }, [])
 
   const dismiss = (id) => setToasts((prev) => prev.filter((x) => x.id !== id))

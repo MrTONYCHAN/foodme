@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { DIET_TAGS } from '../data/recipes.js'
-import { toast } from './Toast.jsx'
+import { toast } from '../lib/toast.js'
 import {
   ClockIcon,
   SparklesIcon,

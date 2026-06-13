@@ -14,7 +14,6 @@ import {
   PreferencesIcon,
   CollapseIcon,
   ExpandIcon,
-  ArrowRightIcon,
   LogoutIcon
 } from './components/Icons.jsx'
 
@@ -86,12 +85,13 @@ function Onboarding({ onStart }) {
   ]
 
   // Auto transition slide dots for premium feel
+  const slideCount = slides.length
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % slides.length)
+      setActiveSlide((prev) => (prev + 1) % slideCount)
     }, 4500)
     return () => clearInterval(timer)
-  }, [])
+  }, [slideCount])
 
   return (
     <div className="onboarding-container">
@@ -313,7 +313,7 @@ function GroceriesTab({ plan, onNavigate, onCompleteCheckout, onResetPlan }) {
           <div className="modal-card">
             <div className="modal-header">
               <h3 className="modal-title">Grocery Checkout</h3>
-              <button className="modal-close-btn" onClick={() => setShowCheckoutModal(false)}>×</button>
+              <button className="modal-close-btn" aria-label="Close checkout dialog" onClick={() => setShowCheckoutModal(false)}>×</button>
             </div>
             <div className="modal-body">
               <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -394,13 +394,13 @@ function TodoTab({ plan, onNavigate }) {
   return (
     <div>
       <div className="todo-view-header">
-        <button className="todo-back-btn" onClick={() => onNavigate('planner')} title="Back to Plan">
+        <button className="todo-back-btn" onClick={() => onNavigate('planner')} title="Back to Plan" aria-label="Back to meal plan">
           ←
         </button>
         <div className="todo-header-pill">
           <span>✨ AI Optimized</span>
         </div>
-        <button className="todo-menu-btn">•••</button>
+        <button className="todo-menu-btn" aria-label="More options">•••</button>
       </div>
 
       <h1 className="page-title" style={{ marginBottom: '4px' }}>Cooking To-Do List</h1>
@@ -606,6 +606,7 @@ export default function App() {
             }}
             onClick={handleLogout}
             title="Log Out"
+            aria-label="Log out"
           >
             <LogoutIcon size={14} />
           </button>
@@ -615,10 +616,12 @@ export default function App() {
       {/* Persistent Left Sidebar with Expand/Collapse support */}
       <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-top">
-          <button 
-            className="sidebar-toggle-btn" 
-            onClick={toggleSidebar} 
+          <button
+            className="sidebar-toggle-btn"
+            onClick={toggleSidebar}
             title={isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-expanded={!isSidebarCollapsed}
           >
             {isSidebarCollapsed ? <ExpandIcon size={14} /> : <CollapseIcon size={14} />}
           </button>
@@ -717,6 +720,7 @@ export default function App() {
               }}
               onClick={handleLogout}
               title="Log Out"
+              aria-label="Log out"
             >
               <LogoutIcon size={14} />
             </button>

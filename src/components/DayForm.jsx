@@ -181,6 +181,8 @@ export default function DayForm({ onGenerate, profile }) {
               step="5"
               value={budget}
               className="custom-range-input"
+              aria-label="Daily food budget in dollars"
+              aria-valuetext={`$${budget}`}
               style={{ '--pct': `${((budget - 15) / 85) * 100}%` }}
               onChange={(e) => setBudget(+e.target.value)}
             />
