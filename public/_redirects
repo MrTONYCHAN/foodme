@@ -1,0 +1,3 @@
+# SPA fallback: every unmatched path serves index.html so the client router
+# (and the in-app 404 view) can take over. Status 200 keeps the URL intact.
+/*    /index.html   200
